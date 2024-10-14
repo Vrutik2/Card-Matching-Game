@@ -37,3 +37,17 @@ class GameState with ChangeNotifier {
 
   GameState(this.cards);
 }
+
+// Game screen widget
+class GameScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Card Matching Game'),
+      ),
+      body: Center(child: Text('Game Grid Here')),
+    );
+  }
+}
+
