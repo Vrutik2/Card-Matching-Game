@@ -2,27 +2,96 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 
-// Main function to run the app
 void main() {
   runApp(MyApp());
 }
 
-// Main App widget
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final initialCards = List.generate(8, (index) => CardModel(
+      frontImage: 'assets/design${index + 1}.png',
+      backImage: 'assets/back_design.png',
+    ))..addAll(List.generate(8, (index) => CardModel(
+      frontImage: 'assets/design${index + 1}.png',
+      backImage: 'assets/back_design.png',
+    )));
+    
+    initialCards.shuffle(Random());
+
     return MaterialApp(
       title: 'Card Matching Game',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: ChangeNotifierProvider(
-        create: (context) => GameState([]),
+        create: (context) => GameState(initialCards),
         child: GameScreen(),
       ),
     );
   }
 }
 
-// Card model class
+class GameScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Card Matching Game'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              Provider.of<GameState>(context, listen: false).resetGame();
+            },
+          ),
+        ],
+      ),
+      body: Consumer<GameState>(
+        builder: (context, gameState, child) {
+          return GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: gameState.cards.length,
+            itemBuilder: (context, index) {
+              return CardWidget(card: gameState.cards[index]);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class CardWidget extends StatelessWidget {
+  final CardModel card;
+
+  const CardWidget({Key? key, required this.card}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Provider.of<GameState>(context, listen: false).flipCard(card);
+      },
+      child: AnimatedSwitcher(
+        duration: Duration(milliseconds: 300),
+        child: card.isFaceUp
+            ? Image.asset(card.frontImage, key: ValueKey('front${card.frontImage}'))
+            : Container(
+                key: ValueKey('back'),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(card.backImage),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+}
+
 class CardModel {
   final String frontImage;
   final String backImage;
@@ -31,7 +100,6 @@ class CardModel {
   CardModel({required this.frontImage, required this.backImage, this.isFaceUp = false});
 }
 
-// Game state management using ChangeNotifier
 class GameState with ChangeNotifier {
   List<CardModel> cards;
   List<CardModel> flippedCards = [];
@@ -66,6 +134,12 @@ class GameState with ChangeNotifier {
       });
     }
   }
+
+  void resetGame() {
+    cards.forEach((card) => card.isFaceUp = false);
+    flippedCards.clear();
+    // Shuffle the existing cards
+    cards.shuffle(Random());
+    notifyListeners();
+  }
 }
-
-
