@@ -34,20 +34,38 @@ class CardModel {
 // Game state management using ChangeNotifier
 class GameState with ChangeNotifier {
   List<CardModel> cards;
+  List<CardModel> flippedCards = [];
+  bool isFlipping = false;
 
   GameState(this.cards);
-}
 
-// Game screen widget
-class GameScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Card Matching Game'),
-      ),
-      body: Center(child: Text('Game Grid Here')),
-    );
+  void flipCard(CardModel card) {
+    if (!card.isFaceUp && !isFlipping) {
+      card.isFaceUp = true;
+      flippedCards.add(card);
+
+      if (flippedCards.length == 2) {
+        checkForMatch();
+      }
+      notifyListeners();
+    }
+  }
+
+  void checkForMatch() {
+    isFlipping = true;
+    if (flippedCards[0].frontImage == flippedCards[1].frontImage) {
+      flippedCards.clear();
+      isFlipping = false; // Match found, allow further interaction
+    } else {
+      Future.delayed(Duration(seconds: 1), () {
+        flippedCards[0].isFaceUp = false;
+        flippedCards[1].isFaceUp = false;
+        flippedCards.clear();
+        isFlipping = false; // No match, allow further interaction
+        notifyListeners();
+      });
+    }
   }
 }
+
 
