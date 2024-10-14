@@ -1,37 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:math';
 
+// Main function to run the app
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
+// Main App widget
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Card Matching Game',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home Page'),
-      ),
-      body: const Center(
-        child: Text('Welcome to the card matching game.'),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: ChangeNotifierProvider(
+        create: (context) => GameState([]),
+        child: GameScreen(),
       ),
     );
   }
 }
 
+// Card model class
+class CardModel {
+  final String frontImage;
+  final String backImage;
+  bool isFaceUp;
+
+  CardModel({required this.frontImage, required this.backImage, this.isFaceUp = false});
+}
+
+// Game state management using ChangeNotifier
+class GameState with ChangeNotifier {
+  List<CardModel> cards;
+
+  GameState(this.cards);
+}
